@@ -3,7 +3,7 @@
 How MJ metadata records (applications, lookup seeds, actions, prompts,
 queries…) are authored as files and pushed. This app's `metadata/` folder follows these rules; the full authoring guide
 with worked examples is [`../template-docs/metadata.md`](../template-docs/metadata.md),
-and the app-repo capture flow (metadata → `V*_Metadata_Sync.sql` migration) is in
+and how metadata reaches installs (one `V*_Metadata_Sync.sql` migration per release) is in
 [`../template-docs/codegen-and-metadata-migrations.md`](../template-docs/codegen-and-metadata-migrations.md).
 
 ## File organization
@@ -24,7 +24,7 @@ and the app-repo capture flow (metadata → `V*_Metadata_Sync.sql` migration) is
 
 Never seed lookup tables with raw `INSERT`s you hand-write **as the source of
 truth** — author the records as metadata files (version-controlled, readable,
-upsertable, `@lookup:` resolution) and let the sync→migration capture produce
+upsertable, `@lookup:` resolution) and let the release's metadata seed produce
 the SQL that ships. Worked example: [`../template-docs/metadata.md`](../template-docs/metadata.md).
 
 ## Applications & nav items

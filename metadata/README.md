@@ -1,7 +1,7 @@
 # metadata/
 
 MJ metadata authored as files and pushed with `mj sync` — the dev-time source
-of truth (installs receive it as `V*_Metadata_Sync.sql` migrations instead).
+of truth (installs receive it through the release's `V*_Metadata_Sync.sql` migration instead).
 
 **How to format and write metadata records:**
 [`docs/template-docs/metadata.md`](../docs/template-docs/metadata.md).
