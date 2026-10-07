@@ -27,10 +27,12 @@ Full flow: [branching.md](branching.md) and [publishing.md](publishing.md).
 ## 3. Branch protection
 
 Nothing in the pipeline pushes to a branch directly, so both branches can be
-protected. Follow the "Open App Release CI Rollout" SOP: required checks and a
-review on `next` (with the CI GitHub App as a "pull requests only" bypass actor,
-so the back-merge can merge itself), and the `rr:` checks, `build`, one approval
-and dismiss-stale-reviews on `main`.
+protected. Follow the "Open App Release CI Rollout" SOP. On `next`: changes arrive
+by pull request with the door checks required and **no approval required**, and
+the CI GitHub App is a "pull requests only" bypass actor so the back-merge can
+merge itself. On `main`: the `rr:` checks and `build` required, **one approval**,
+and dismiss-stale-reviews, with the Repository admin role as a "pull requests only"
+bypass: the override for a failure case (no second reviewer, a stuck check).
 
 ## 4. Services to connect
 
