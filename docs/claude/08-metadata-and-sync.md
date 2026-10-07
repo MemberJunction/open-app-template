@@ -3,7 +3,7 @@
 How MJ metadata records (applications, lookup seeds, actions, prompts,
 queries…) are authored as files and pushed. This app's `metadata/` folder follows these rules; the full authoring guide
 with worked examples is [`../template-docs/metadata.md`](../template-docs/metadata.md),
-and how metadata reaches installs (one `V*_Metadata_Sync.sql` migration per release) is in
+and how metadata reaches installs (one `V*__Metadata_Sync.sql` migration per release) is in
 [`../template-docs/codegen-and-metadata-migrations.md`](../template-docs/codegen-and-metadata-migrations.md).
 
 ## File organization

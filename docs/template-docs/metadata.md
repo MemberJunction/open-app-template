@@ -7,7 +7,7 @@ is how to format and write them. The lifecycle rule to internalize first:
 
 > `metadata/` is the **dev-time source of truth**. The install engine never
 > reads it — consumers receive your metadata through the one
-> `V*_Metadata_Sync.sql` migration the build engineer generates from it each
+> `V*__Metadata_Sync.sql` migration the build engineer generates from it each
 > release (see [codegen-and-metadata-migrations.md](codegen-and-metadata-migrations.md)).
 
 ## Directory layout

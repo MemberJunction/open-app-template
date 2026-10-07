@@ -23,9 +23,10 @@
 -- )
 -- GO
 --
--- Rows in MJ core tables use the literal `__mj` schema, with HARDCODED UUIDs:
+-- Rows in MJ core tables use the ${mjSchema} placeholder (never a literal `__mj`), with
+-- HARDCODED UUIDs. Metadata records normally ship in the release's Metadata_Sync seed instead:
 --
--- INSERT INTO __mj.Application (ID, Name, Description)
+-- INSERT INTO ${mjSchema}.Application (ID, Name, Description)
 --   VALUES ('00000000-0000-0000-0000-000000000000', '<Your App>', '<...>')
 -- GO
 
