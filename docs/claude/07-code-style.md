@@ -36,3 +36,7 @@
 - TSDoc on public APIs.
 - try/catch with meaningful messages — but remember `RunView`/`Save`/`Delete`
   signal failure via return values, not exceptions (doc 3).
+
+
+MJ's full style rules — including the conventions this page summarises — are in
+[`CLAUDE.md`](https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md).

@@ -52,7 +52,7 @@ EXEC sp_addextendedproperty @name = N'MS_Description', @value = N'What this colu
 - **Immutability**: an applied/published migration is never edited — add a new
   one. Within a published major version, changes are **additive only** (no
   drops, renames, narrowed types) — breaking changes force a major bump (MJ's
-  `packages/OpenApp/PUBLISH_NO_BREAK_POLICY.md`).
+  [`packages/OpenApp/PUBLISH_NO_BREAK_POLICY.md`](https://github.com/MemberJunction/MJ/blob/next/packages/OpenApp/PUBLISH_NO_BREAK_POLICY.md)).
 - Value-list changes: alter the CHECK constraint in a migration (drop +
   re-add), then CodeGen regenerates the TypeScript union.
 
@@ -60,3 +60,10 @@ EXEC sp_addextendedproperty @name = N'MS_Description', @value = N'What this colu
 
 MJ tracks all record changes automatically unless disabled per-entity — don't
 build custom versioning; query the Record Changes entities instead.
+
+
+## MJ's deep-dive guides
+
+- [`guides/MIGRATION_CODEGEN_WORKFLOW_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/MIGRATION_CODEGEN_WORKFLOW_GUIDE.md) — MJ's own migration → CodeGen → commit loop, the source of the convention this repo follows
+- [`packages/OpenApp/PUBLISH_NO_BREAK_POLICY.md`](https://github.com/MemberJunction/MJ/blob/next/packages/OpenApp/PUBLISH_NO_BREAK_POLICY.md) — what counts as breaking once a version is published
+- [`guides/POSTGRES_SCHEMA_CASING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/POSTGRES_SCHEMA_CASING_GUIDE.md) + [`guides/PG_MIGRATION_GLOSSARY.md`](https://github.com/MemberJunction/MJ/blob/next/guides/PG_MIGRATION_GLOSSARY.md) — if you generate PostgreSQL variants (`pnpm run mj:migrate:convert`)

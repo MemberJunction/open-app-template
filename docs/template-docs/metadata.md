@@ -34,7 +34,7 @@ metadata/
 
 ```json
 {
-  "version": "1.0.0",
+  "version": "0.0.0",
   "push": { "autoCreateMissingRecords": true },
   "directoryOrder": ["schema-info", "item-types"]
 }
@@ -139,8 +139,11 @@ let the capture step produce the SQL that ships.
 
 ## Worked example 2 — an application with nav items
 
-An `Applications` record gives your app a UI presence in MJ Explorer
-(folder config: `"entity": "Applications"`):
+An `MJ: Applications` record is what gives your app a tile in Explorer's app
+switcher and defines its nav items (folder config:
+`"entity": "MJ: Applications"` — note the `MJ: ` prefix; core entity names carry
+it, and an unprefixed name silently matches nothing). This template ships the
+folder pre-wired at `metadata/applications/`, as an inert `.template` to fill in:
 
 ```json
 [
@@ -149,20 +152,21 @@ An `Applications` record gives your app a UI presence in MJ Explorer
       "Name": "Sample App",
       "Description": "Sample application installed by this Open App",
       "Icon": "fa-solid fa-cube",
-      "DefaultForNewUser": false,
-      "Status": "Active",
-      "NavigationStyle": "Both",
+      "Color": "#264FAF",
+      "DefaultForNewUser": true,
+      "DefaultSequence": 1000,
       "DefaultNavItems": [
         {
-          "Label": "Dashboard",
-          "Icon": "fa-solid fa-chart-line",
+          "Label": "Overview",
+          "Icon": "fa-solid fa-gauge-high",
           "ResourceType": "Custom",
-          "DriverClass": "SampleAppDashboard",
+          "DriverClass": "SampleAppOverviewResource",
           "isDefault": true
         }
       ]
     },
-    "relatedEntities": { "Application Entities": [] }
+    "relatedEntities": { "MJ: Application Entities": [] },
+    "primaryKey": { "ID": "<a UUID you generate once and never change>" }
   }
 ]
 ```
@@ -170,14 +174,22 @@ An `Applications` record gives your app a UI presence in MJ Explorer
 Every `DefaultNavItems` entry with `ResourceType: "Custom"` needs its
 `DriverClass` to exactly match an
 `@RegisterClass(BaseResourceComponent, '<DriverClass>')` component in your
-Angular package. Exactly one `isDefault: true` per app.
+Angular package — a mismatch renders an empty tab with no error. Exactly one
+`isDefault: true` per app.
+
+`DefaultForNewUser: true` is deliberate: CodeGen also creates a machine-named
+"bucket" Application per schema which takes the column's DB default of `1`, so an
+app shipping `false` loses the switcher to the bucket. The whole
+component → registration → bundle → nav item → user-access chain, and what to do
+when nothing appears, is in
+[explorer-visibility.md](explorer-visibility.md).
 
 ## The workflow (edit → push → capture → commit)
 
 ```sh
 # from the MJ repo root, with this app linked (docs/template-docs/linking-to-mj.md)
-npx mj-sync validate --dir=packages/dev-apps/<app>/metadata     # 1. validate
-npx mj sync push --dir=packages/dev-apps/<app>/metadata --format=json  # 2. push to YOUR dev DB
+pnpm exec mj-sync validate --dir=./metadata     # 1. validate
+pnpm exec mj sync push --dir=./metadata --format=json  # 2. push to YOUR dev DB
 # 3. capture the SQL as migrations/V<ts>__v<x.y.x>_Metadata_Sync.sql
 #    (hardcoded UUIDs; ${flyway:defaultSchema} for your schema, literal __mj for core rows)
 # 4. commit metadata files (incl. write-backs) + the migration + a changeset
@@ -197,3 +209,10 @@ push as a distribution mechanism.
   matching the pattern in a registered folder WILL be pushed.
 - If a record implies codegen output (new entities/fields), run the codegen
   loop too and commit it all together.
+
+
+## MJ's own reference
+
+Every field, flag and file-format detail of the sync tool is in
+[`packages/MetadataSync/README.md`](https://github.com/MemberJunction/MJ/blob/next/packages/MetadataSync/README.md) — that is the
+authority when this page and the tool disagree.

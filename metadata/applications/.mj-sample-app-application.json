@@ -1,0 +1,27 @@
+[
+  {
+    "fields": {
+      "Name": "Sample App",
+      "Description": "Placeholder application shipped by the Open App scaffold - replace with your app",
+      "Icon": "fa-solid fa-cube",
+      "Color": "#264FAF",
+      "DefaultForNewUser": true,
+      "DefaultSequence": 1000,
+      "DefaultNavItems": [
+        {
+          "Label": "Overview",
+          "Icon": "fa-solid fa-cube",
+          "ResourceType": "Custom",
+          "DriverClass": "SampleAppOverviewResource",
+          "isDefault": true
+        }
+      ]
+    },
+    "relatedEntities": {
+      "MJ: Application Entities": []
+    },
+    "primaryKey": {
+      "ID": "F9028B9E-B014-4156-942B-F574B783C046"
+    }
+  }
+]

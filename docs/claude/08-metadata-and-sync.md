@@ -39,11 +39,15 @@ per app. Worked example: [`../template-docs/metadata.md`](../template-docs/metad
 ## Commands
 
 ```sh
-npx mj-sync validate --dir=metadata          # validate before pushing
-npx mj sync push --dir=metadata --format=json  # push (non-interactive)
+pnpm exec mj-sync validate --dir=metadata          # validate before pushing
+pnpm exec mj sync push --dir=metadata --format=json  # push (non-interactive)
 ```
 
 Validation understands virtual properties, defaults, and reference integrity;
 `push` runs it automatically. Remember: `mj sync push` is a **single-author,
 dev-time** tool — teammates and installs receive metadata via migrations, not
 by running sync.
+
+
+MJ's own reference for the sync tool, every field and flag, is
+[`packages/MetadataSync/README.md`](https://github.com/MemberJunction/MJ/blob/next/packages/MetadataSync/README.md).

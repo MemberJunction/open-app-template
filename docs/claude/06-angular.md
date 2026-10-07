@@ -51,5 +51,18 @@ Translucent variants via `color-mix(in srgb, var(--mj-brand-primary) 10%, transp
 Never use primitive tokens (`--mj-color-neutral-*`) in components — they don't
 adapt to dark mode. Acceptable hardcoded exceptions: SVG data URIs, code-editor
 backgrounds, categorical chart palettes, `rgba(255,255,255,x)` overlays,
-`var(…, fallback)` fallbacks. The full token table lives in MJ's CLAUDE.md /
-`_tokens.scss`.
+`var(…, fallback)` fallbacks. The full token table lives in [MJ's `CLAUDE.md`](https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md)
+and its `_tokens.scss`; the reasoning is in [`guides/APP_COLOR_ARCHITECTURE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/APP_COLOR_ARCHITECTURE.md).
+
+
+## MJ's deep-dive guides
+
+- [`guides/FORMS_ARCHITECTURE_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/FORMS_ARCHITECTURE_GUIDE.md) — how generated entity forms are structured, and where custom panels plug in
+- [`guides/UI_LAYERING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/UI_LAYERING_GUIDE.md) — which layer a component belongs in
+- [`guides/NAVIGATION_AND_ROUTING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/NAVIGATION_AND_ROUTING_GUIDE.md) — Explorer navigation, tabs and routes
+- [`guides/DASHBOARD_BEST_PRACTICES.md`](https://github.com/MemberJunction/MJ/blob/next/guides/DASHBOARD_BEST_PRACTICES.md) — dashboards, including the load-complete lifecycle
+- [`guides/APP_COLOR_ARCHITECTURE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/APP_COLOR_ARCHITECTURE.md) — the color/token system behind the no-hardcoded-colors rule
+- [`guides/LAZY_LOADING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/LAZY_LOADING_GUIDE.md) — lazy-loaded components and routes
+
+Getting a component to actually appear in Explorer is a separate chain, documented here:
+[`../template-docs/explorer-visibility.md`](../template-docs/explorer-visibility.md).

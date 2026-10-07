@@ -9,7 +9,7 @@
  * later and change just one thing (e.g. the npm scope before first publish)
  * without touching the rest. The pinned SchemaInfo UUID is preserved forever.
  *
- *     npm run init
+ *     pnpm run init
  *     # or non-interactive (any subset; missing flags prompt):
  *     node scripts/init-template.mjs \
  *       --name acme-crm --display "Acme CRM" \
@@ -24,7 +24,7 @@
  * before committing.
  */
 import { createInterface } from 'node:readline';
-import { readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync, rmSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 
@@ -75,6 +75,7 @@ cur.idMin = String(schemaInfoRecord?.fields?.EntityIDMin ?? 10000001);
 cur.idMax = String(schemaInfoRecord?.fields?.EntityIDMax ?? 10099999);
 const existingUuid = schemaInfoRecord?.primaryKey?.ID ?? null;
 const isTemplate = cur.name === 'mj-sample-app';
+let appRecordNote = null;
 
 // ---------- stdin line-queue reader (works for TTYs AND pipes) --------------
 const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -219,7 +220,10 @@ const pairs = [
   [`Load${cur.pascal}Actions`, `Load${pascal}Actions`],
   [`Load${cur.pascal}Server`, `Load${pascal}Server`],
   [`Load${cur.pascal}Client`, `Load${pascal}Client`],
-  [`${cur.pascal}Dashboard`, `${pascal}Dashboard`],
+  // Every PascalCase identifier built on the app name — component classes, the
+  // DriverClass strings that must match them, doc prose. Sorted longest-first below,
+  // so `LoadSampleAppServer` and friends are replaced before this bare token.
+  [cur.pascal, pascal],
   [cur.pkgPrefix, newPkgPrefix],          // package names + every reference to them
   // Bare-scope PROSE ("all @acme packages") — compare bare parts only, or an
   // unchanged two-part scope would mangle package names on re-runs.
@@ -245,7 +249,10 @@ if (!args.yes) {
 rl.close();
 
 // ---------- apply replacements over tracked text files -----------------------
-const SKIP = new Set(['scripts/init-template.mjs']);
+// mj-app.reference.jsonc is a verbatim copy of MJ's annotated reference manifest —
+// documentation, never read by a tool. Renaming inside it would only make it diverge
+// from upstream, so it is skipped along with this script itself.
+const SKIP = new Set(['scripts/init-template.mjs', 'mj-app.reference.jsonc']);
 const files = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).split('\n').filter(Boolean)
   .filter(f => !SKIP.has(f) && existsSync(f) && statSync(f).isFile());
 let changed = 0;
@@ -256,6 +263,37 @@ for (const f of files) {
   const before = text;
   for (const [from, to] of replacements) text = text.split(from).join(to);
   if (text !== before) { writeFileSync(f, text); changed++; }
+}
+
+// ---------- the MJ: Applications record (Explorer visibility) ----------------
+// The scaffold ships this record ACTIVE so the Explorer chain is provable out of the
+// box, which means it also ships a UUID. That UUID must not survive into your app:
+// two apps carrying the same Application ID collide the moment they land on one
+// database. So on the FIRST run (template state) it is re-minted, and the file is
+// renamed to your app id; on later runs it is preserved, exactly like the
+// SchemaInfo UUID, because by then it may have been pushed somewhere.
+const APP_RECORD_DIR = 'metadata/applications';
+// Glob rather than assume the filename: it is renamed to the app id on the first run,
+// and a developer may have named it anything (only the leading dot is load-bearing).
+const appRecordPath = existsSync(APP_RECORD_DIR)
+  ? (readdirSync(APP_RECORD_DIR)
+      .filter((f) => f.startsWith('.') && f.endsWith('-application.json'))
+      .map((f) => `${APP_RECORD_DIR}/${f}`)[0] ?? null)
+  : null;
+if (appRecordPath) {
+  try {
+    const recs = JSON.parse(readFileSync(appRecordPath, 'utf8'));
+    if (isTemplate && recs[0]?.primaryKey) {
+      recs[0].primaryKey.ID = randomUUID().toUpperCase();
+      delete recs[0].sync;                       // any checksum is stale once the ID moves
+    }
+    const target = `${APP_RECORD_DIR}/.${name}-application.json`;
+    writeFileSync(target, JSON.stringify(recs, null, 2) + '\n');
+    if (target !== appRecordPath) rmSync(appRecordPath);
+    appRecordNote = `${target}${isTemplate ? ' (new pinned Application UUID)' : ' (UUID kept)'}`;
+  } catch (e) {
+    appRecordNote = `⚠️  could not rewrite ${appRecordPath}: ${e.message} — fix it by hand`;
+  }
 }
 
 // ---------- authoritative JSON writes ----------------------------------------
@@ -278,12 +316,12 @@ writeFileSync(SCHEMA_INFO, JSON.stringify([{
 }], null, 2) + '\n');
 
 console.log(`
-✅ Done — ${changed} file(s) rewritten; ${SCHEMA_INFO} ${existingUuid ? 'updated (UUID kept)' : 'activated (new pinned UUID)'}.
+✅ Done — ${changed} file(s) rewritten; ${SCHEMA_INFO} ${existingUuid ? 'updated (UUID kept)' : 'activated (new pinned UUID)'}.${appRecordNote ? `\n   Application record: ${appRecordNote}` : ''}
 
 Next steps:
   1. Review:   git diff
-  2. Lockfile: npm install        (required if the scope or app id changed)
-  3. Build:    npm run build:packages
+  2. Lockfile: pnpm install       (required if the scope or app id changed)
+  3. Build:    pnpm run build:packages
   4. First run? Branches + services: docs/template-docs/repo-setup.md
      and link into MJ:              docs/template-docs/linking-to-mj.md
 ${existingUuid ? '\nNOTE: the SchemaInfo UUID was preserved. If you changed the SCHEMA NAME and\nthe old schema was already pushed to a database, that database keeps the old\nrow — clean it up (or drop the dev schema) before re-syncing.' : '\nThe SchemaInfo UUID above is now pinned — never change it once pushed to any\ndatabase.'}

@@ -51,6 +51,15 @@ node_modules/
 dist/
 dist-browser/
 
+# pnpm is this repo's package manager (see .npmrc / pnpm-workspace.yaml).
+# pnpm-lock.yaml is the lockfile of record and IS committed; a stray `npm install`
+# must not leave a second, conflicting lockfile behind.
+package-lock.json
+
+# The repo-root .npmrc carries this repo's pnpm settings and IS committed — it is what
+# makes `pnpm install` resolve the same way for everyone. Never put a registry auth
+# token in it; auth belongs in your user-level ~/.npmrc or in CI secrets.
+
 # Temporary files
 
 tmp/
@@ -154,7 +163,6 @@ packages/MJAPI/.env-remote
 .mjrc.ts
 .mjrc.mjs
 .mjrc.cjs
-.npmrc
 .config/mjrc
 .config/mjrc.json
 .config/mjrc.yaml

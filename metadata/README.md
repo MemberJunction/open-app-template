@@ -6,6 +6,11 @@ of truth (installs receive it as `V*_Metadata_Sync.sql` migrations instead).
 **How to format and write metadata records:**
 [`docs/template-docs/metadata.md`](../docs/template-docs/metadata.md).
 
+Two folders ship pre-wired and **both need fill-out**: `schema-info/` (registers
+your schema) and `applications/` (puts your app in Explorer's app switcher — see
+`applications/README.md` and
+[`docs/template-docs/explorer-visibility.md`](../docs/template-docs/explorer-visibility.md)).
+
 ⚠️ **`schema-info/` requires fill-out before it does anything**: it ships as
 an inert `.template` file with TODO placeholders that `mj sync` cannot see.
 Follow `schema-info/README.md` (copy → `.schema-info.json`, fill the TODOs,

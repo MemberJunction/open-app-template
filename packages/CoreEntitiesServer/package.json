@@ -1,9 +1,11 @@
 {
   "name": "@mj-sample-app/core-entities-server",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "description": "Server-side entity subclass overrides (validation, computed fields, save hooks). TODO(template): rename.",
   "main": "dist/index.js",
+  "files": ["/dist"],
+  "publishConfig": { "access": "public" },
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && tsc-alias -f",
@@ -11,17 +13,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MemberJunction/mj-sample-open-app"
+    "url": "https://github.com/MemberJunction/open-app-template"
   },
-  "license": "MIT",
+  "license": "BUSL-1.1",
   "dependencies": {
-    "@mj-sample-app/entities": "1.0.0"
+    "@mj-sample-app/entities": "0.0.0"
   },
   "peerDependencies": {
-    "@memberjunction/core": "^5.44.0",
-    "@memberjunction/core-entities": "^5.44.0",
-    "@memberjunction/global": "^5.44.0",
-    "@memberjunction/sqlserver-dataprovider": "^5.44.0"
+    "@memberjunction/core": "^6.1.0-edge.3",
+    "@memberjunction/core-entities": "^6.1.0-edge.3",
+    "@memberjunction/global": "^6.1.0-edge.3",
+    "@memberjunction/sqlserver-dataprovider": "^6.1.0-edge.3"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

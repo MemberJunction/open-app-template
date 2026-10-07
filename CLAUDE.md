@@ -1,14 +1,51 @@
 # <Your App> — development guide (template)
 
-This repository is a **MemberJunction Open App** built from the
-mj-sample-open-app template. It is developed **linked inside a MemberJunction
-checkout** — see `docs/template-docs/linking-to-mj.md`. TODO(template): replace the
-placeholders in this file when you rename the app.
+This repository is an **open app** built on top of the
+[MemberJunction](https://github.com/MemberJunction/MJ) platform. TODO(template):
+replace the placeholders in this file when you rename the app.
+
+**MemberJunction's own `CLAUDE.md` is the authoritative guide — read it first.** The
+`@`-imports below inline it into context; only the path matching this repo's topology
+resolves, the others are inert. Prefer either over
+[GitHub](https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md) — the local copy is
+version-matched to the MJ this repo actually runs against.
+
+@../mj/CLAUDE.md
+@../../../CLAUDE.md
+
+*(`../mj/` = a sibling MJ checkout — both the MJ 6.x parent workspace `mj dev workspace`
+generates and mjdev's instance layout, where this repo is a flat sibling of `mj/`.
+`../../../` = legacy nested 5.x, `<instance>/mj/packages/dev-apps/<app>/`.)*
+
+⚠️ **Both paths are literal, so the sibling case depends on the directory name: clone MJ
+as `mj`.** `git clone https://github.com/MemberJunction/MJ` produces `MJ/`, which resolves
+on a case-insensitive filesystem (macOS) and **silently does not** on Linux/CI — the guide
+just never loads, with nothing to notice. Either clone it as `mj`
+(`git clone …/MJ.git mj`) or add your own path as a third `@`-import line above.
+
+MJ's guide is MJ-repo-centric — "the repo root" always means *MJ's* root. How **this** app
+plugs into MJ's extension points is documented here, and the seam that matters most is the
+one MJ's guide never mentions: how a resource component reaches Explorer's app switcher
+([`docs/template-docs/explorer-visibility.md`](docs/template-docs/explorer-visibility.md)).
+
+It is developed **linked to a MemberJunction checkout** — the two clones are joined into
+one pnpm workspace by `mj dev workspace`; see
+[`docs/template-docs/linking-to-mj.md`](docs/template-docs/linking-to-mj.md).
+
+**Package manager: pnpm** (`corepack pnpm --version`, ≥ 10) — matching MJ 6.x,
+which is a pnpm monorepo. `pnpm-lock.yaml` is the lockfile of record;
+`package-lock.json` is gitignored so a stray `npm install` cannot leave a second
+one behind. Two pnpm/npm differences that fail *silently*: selecting one package
+is `pnpm --filter <pkg> run build` (npm's `--workspace` flag makes pnpm run the
+script at the repo ROOT instead), and `pnpm run x -- --flag` passes `--` through
+as a literal argument (drop the `--`).
 
 ## Repository structure
 
 ```
 mj-app.json            - MJ Open App manifest (the source of truth for the app)
+mj.config.cjs          - CodeGen config: output paths, schema scope, SQL capture
+pnpm-workspace.yaml    - pnpm workspace + resolution settings (see .npmrc)
 migrations/            - Skyway migrations for the app schema (starts empty)
 metadata/              - mj-sync metadata (dev-time; seeds ship as migrations)
 packages/
@@ -21,14 +58,18 @@ docs/                  - how this repo works (branching, publishing, codegen, li
 docs/claude/           - the MemberJunction development guide (topic-split, with TOC)
 ```
 
-## 📖 The MemberJunction development guide → [`docs/claude/`](docs/claude/README.md)
+## 📖 The MJ rulebook, distilled → [`docs/claude/`](docs/claude/README.md)
 
-The MJ coding rulebook — critical rules, entity/data patterns, performance,
-CodeGen + migration authoring, Angular conventions, code style, metadata
-authoring, testing — lives in **[docs/claude/](docs/claude/README.md)** as a
-set of topic docs with a table of contents (adapted from MemberJunction's own
-`CLAUDE.md`; MJ's copy remains authoritative for MJ-core work and anything not
-covered there). Read the relevant topic before working in its area:
+**[docs/claude/](docs/claude/README.md)** is an app-repo-focused distillation of MJ's
+`CLAUDE.md`, split into topics with a TOC, each ending in links to MJ's own deep-dive
+guides on GitHub. It exists for the case the `@`-imports above cannot cover — a bare clone
+with no MJ checkout beside it (CI, a fresh machine, a reviewer reading on GitHub) — and
+because it is scoped to what an *app* author needs rather than what an MJ-core contributor
+needs.
+
+**MJ's copy stays authoritative.** Where the two disagree, MJ wins; when a checkout is
+present the `@`-import above has already put MJ's real guide in context. Read the relevant
+topic before working in its area:
 
 | Topic | Doc |
 |---|---|
@@ -55,22 +96,28 @@ covered there). Read the relevant topic before working in its area:
    `origin/<same-name>` only; PRs target `next`; a PR adding a migration must
    include a changeset (≥ minor). See `docs/template-docs/branching.md`.
 5. **Single-copy invariant** — `@memberjunction/*` are peerDependencies; never
-   hard-depend on them, never `npm install` inside subfolders of a linked MJ
-   workspace (`docs/template-docs/versioning-and-peer-deps.md`).
-6. **When linked into MJ**: the wiring edits in the MJ repo (root
-   `package.json`, `mj.config.cjs`, MJAPI/MJExplorer `package.json`, bootstrap
-   import, lockfile) are local-only — never commit them to MJ.
+   hard-depend on them, and never run an install *inside* a member of a linked
+   workspace (installs happen at the workspace parent). A second physical copy of
+   `@memberjunction/global`/`core` splits MJ's class-factory registry and your
+   entities/resolvers silently stop appearing
+   (`docs/template-docs/versioning-and-peer-deps.md`).
+6. **When linked to MJ**: the *registration* edits in the MJ repo
+   (`mj.config.cjs` `dynamicPackages`, MJAPI/MJExplorer `package.json`, the
+   Explorer bootstrap import) are local-only — never commit them to MJ. The
+   *linking* files are generated at the workspace parent, outside both repos, and
+   are never committed anywhere.
 
 ## Build & dev commands
 
 ```sh
-# linked (from the MJ repo root — the normal mode):
-npx turbo build --filter="@mj-sample-app/*"
-npx mj migrate --schema sample_app --dir packages/dev-apps/mj-sample-open-app/migrations
-npx mj codegen
+# this repo (works standalone AND as a workspace member):
+pnpm install                  # at the WORKSPACE PARENT when linked; here when standalone
+pnpm run build:packages       # build this app's packages
+pnpm run mj:migrate           # apply this app's migrations (needs a DB + .env)
+pnpm run mj:codegen           # regenerate entities/resolvers/forms after a schema change
 
-# standalone smoke build (no DB):
-npm install && npm run build:packages
+# one package only (from the workspace root):
+pnpm --filter @mj-sample-app/ng run build
 ```
 
 The full development workflow (where to add code, capturing codegen +

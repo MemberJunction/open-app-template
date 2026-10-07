@@ -1,6 +1,6 @@
 # MemberJunction development guide (for this app)
 
-A topic-split, app-repo-focused adaptation of **MemberJunction's `CLAUDE.md`**
+A topic-split, app-repo-focused distillation of **MemberJunction's `CLAUDE.md`**
 — the development rulebook every MJ agent and developer works from. The
 original is one large file in the MJ repo
 (<https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md>, or `CLAUDE.md` at
@@ -27,3 +27,10 @@ an agent can load) only the topic you need.
 model) — the rest as the work touches them. The repo-specific workflow
 (worktree linking, publishing, branching model) lives one level up in
 [`docs/template-docs/`](../template-docs/README.md).
+
+## Beyond these topics — MJ's own guides
+
+Each topic doc ends with links to the MemberJunction guides that go deeper on it. The
+complete index, when you need one no topic here names, is
+[`guides/README.md`](https://github.com/MemberJunction/MJ/blob/next/guides/README.md); the rulebook these docs distil is
+[`CLAUDE.md`](https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md).

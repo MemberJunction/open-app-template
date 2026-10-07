@@ -52,4 +52,12 @@ true DB state after out-of-band SQL: `BypassCache: true`. Also: before
 bulk-loading an entity a loaded engine may already hold, ask
 `BaseEngineRegistry.Instance.TryGetCachedRecords<T>(name, { unfilteredOnly: true })`
 — read the returned array, never mutate it. Full doctrine lives in MJ's
-`guides/CACHING_AND_PUBSUB_GUIDE.md`.
+[`guides/CACHING_AND_PUBSUB_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/CACHING_AND_PUBSUB_GUIDE.md).
+
+
+## MJ's deep-dive guides
+
+- [`guides/CACHING_AND_PUBSUB_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/CACHING_AND_PUBSUB_GUIDE.md) — the full caching + pub/sub doctrine referenced above
+- [`guides/KEYSET_PAGINATION_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/KEYSET_PAGINATION_GUIDE.md) — pagination that stays fast at depth
+- [`guides/LAZY_LOADING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/LAZY_LOADING_GUIDE.md) — deferring work until it is needed
+- [`guides/RECORD_SET_PROCESSING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/RECORD_SET_PROCESSING_GUIDE.md) — bulk processing patterns

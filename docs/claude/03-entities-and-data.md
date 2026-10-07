@@ -73,3 +73,13 @@ owns a provider (`ProviderBase`, `BaseEngine`, `BaseEntity`) use `this` /
 `this.ProviderToUse`; in helpers accept an optional
 `provider?: IMetadataProvider` and fall back to the global explicitly. Global
 is fine in single-provider apps, CLI scripts, and bootstrap code.
+
+
+## MJ's deep-dive guides
+
+- [`guides/BASE_ENTITY_SERVER_PATTERNS.md`](https://github.com/MemberJunction/MJ/blob/next/guides/BASE_ENTITY_SERVER_PATTERNS.md) — server-side `BaseEntity` subclass patterns (validation, save hooks), i.e. what belongs in `packages/CoreEntitiesServer`
+- [`guides/TRANSACTIONS_AND_BATCHING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/TRANSACTIONS_AND_BATCHING_GUIDE.md) — transaction groups and batched saves
+- [`guides/ENTITY_SEARCH_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/ENTITY_SEARCH_GUIDE.md) — search across entities
+- [`guides/SOFT_DELETES_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/SOFT_DELETES_GUIDE.md) — soft-delete semantics
+- [`guides/UUID_COMPARISON_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/UUID_COMPARISON_GUIDE.md) — comparing UUID primary keys correctly (a real source of silent bugs)
+- [`guides/RECORD_SET_PROCESSING_GUIDE.md`](https://github.com/MemberJunction/MJ/blob/next/guides/RECORD_SET_PROCESSING_GUIDE.md) — processing large record sets

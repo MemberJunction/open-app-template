@@ -1,4 +1,4 @@
-# The setup script — `npm run init`
+# The setup script — `pnpm run init`
 
 `scripts/init-template.mjs` turns this template into **your** app: it reads
 the repo's CURRENT identity, renames it to your answers, and activates the
@@ -43,7 +43,7 @@ re-syncing. Review the diff before you commit.
 ## How to run it
 
 ```sh
-npm run init          # interactive — prompts for each answer
+pnpm run init         # interactive — prompts for each answer
 ```
 
 or non-interactively (flags map 1:1 to the prompts; `--yes` skips the
@@ -109,8 +109,8 @@ deterministic across installs.
 
 ```sh
 git diff                   # 1. review everything it changed
-npm install                # 2. regenerate package-lock.json for the new names
-npm run build:packages     # 3. confirm the renamed packages build (5/5)
+pnpm install               # 2. regenerate pnpm-lock.yaml for the new names
+pnpm run build:packages    # 3. confirm the renamed packages build (5/5)
 ```
 
 Then commit, set up branches + services ([repo-setup.md](repo-setup.md)), and

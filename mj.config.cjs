@@ -38,10 +38,10 @@ module.exports = {
   // Commands CodeGen runs after generating — build the packages it wrote into
   // so the generated TypeScript is compiled and committed alongside its source.
   commands: [
-    { workingDirectory: './packages/Entities', command: 'npm', args: ['run', 'build'], when: 'after' },
-    { workingDirectory: './packages/Actions', command: 'npm', args: ['run', 'build'], when: 'after' },
-    { workingDirectory: './packages/Server', command: 'npm', args: ['run', 'build'], when: 'after' },
-    { workingDirectory: './packages/Angular', command: 'npm', args: ['run', 'build'], when: 'after' },
+    { workingDirectory: './packages/Entities', command: 'pnpm', args: ['run', 'build'], when: 'after' },
+    { workingDirectory: './packages/Actions', command: 'pnpm', args: ['run', 'build'], when: 'after' },
+    { workingDirectory: './packages/Server', command: 'pnpm', args: ['run', 'build'], when: 'after' },
+    { workingDirectory: './packages/Angular', command: 'pnpm', args: ['run', 'build'], when: 'after' },
   ],
 
   // ==========================================================================
@@ -59,12 +59,31 @@ module.exports = {
   },
 
   // ==========================================================================
-  // Schema exclusions — RECOMMENDED
+  // Schema scope — REQUIRED
   // ==========================================================================
-  // CodeGen for THIS app must only touch THIS app's schema. Never generate
-  // against MJ core (__mj) or system schemas from an app repo.
-  // Include schemas for dependencies to avoid generating duplicate entities for 
-  // them. See docs/template-docs/codegen-and-metadata-migrations.md.
+  // CodeGen for THIS app must only touch THIS app's schema, and `includeSchemas`
+  // is what actually enforces that. `excludeSchemas` alone does NOT: it names the
+  // schemas to skip, so any schema you did not think to name is in scope. That is
+  // not theoretical — when this app is developed inside an MJ checkout that has
+  // other apps linked, an exclude-only config happily generates against their
+  // schemas too, and the run dies applying permissions for another app's stored
+  // procedures (those procs only exist where that app's own CodeGen has run). The
+  // error names the other app while the cause is this file.
+  //
+  // `includeSchemas` is a positive opt-in: a schema is in scope iff it is named
+  // here AND absent from excludeSchemas (MJ's CodeGenLib/src/Database/schema-scope.ts
+  // resolves the include list INTO excludeSchemas, so one name pins the blast radius
+  // to exactly this app). Leave it empty/absent and you get classic exclude-only
+  // behaviour — which is why this template ships it filled in.
+  //
+  // TODO(template): your schema name here (same value as mj-app.json schema.name).
+  includeSchemas: ['sample_app'],
+
+  // Belt and braces: MJ core and the system schemas are never generated from an app
+  // repo, regardless of the include list. Add a dependency app's schema here too if
+  // you consume one — its entities ship in ITS published packages, so regenerating
+  // them locally would produce a duplicate set. See
+  // docs/template-docs/codegen-and-metadata-migrations.md.
   excludeSchemas: ['sys', 'staging', 'dbo', '__mj'],
 
   // ==========================================================================

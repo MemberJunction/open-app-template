@@ -1,6 +1,6 @@
 # 1 · Critical rules (violations are unacceptable)
 
-The hard rules from MJ's CLAUDE.md. Everything else in this guide is
+The hard rules from [MJ's `CLAUDE.md`](https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md). Everything else in this guide is
 convention; these are contract.
 
 ## No commits without explicit approval
@@ -63,7 +63,7 @@ auth-provider tokens and truly throwaway state.
 
 ## Always run and update unit tests
 Modifying a package means running that package's tests before you're done
-(`cd packages/X && npm run test`). Tests broken by your change are yours to
+(`pnpm --filter <pkg> run test`). Tests broken by your change are yours to
 update; tests broken for other reasons are yours to fix. Report pass/fail/skip
 counts honestly.
 
@@ -72,3 +72,10 @@ counts honestly.
   code together with its migration.
 - **Never edit an applied migration** — add a new `V*` file (checksum drift
   breaks every install). Additive-only within a published major version.
+
+
+## MJ's own words
+
+These are distilled from MemberJunction's `CLAUDE.md` — read it directly for anything not
+covered here: [`CLAUDE.md`](https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md). When this repo sits beside an MJ checkout, the
+`@`-import at the top of our own `CLAUDE.md` has already inlined the version-matched copy.

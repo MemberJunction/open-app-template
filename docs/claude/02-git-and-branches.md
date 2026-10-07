@@ -33,3 +33,8 @@ branch.
 This repo's full branch + release model (`next` → `main`, changesets, the
 publish workflow) is in [`../template-docs/branching.md`](../template-docs/branching.md) and
 [`../template-docs/publishing.md`](../template-docs/publishing.md).
+
+
+MJ's own branch + release conventions (and how a release line is cut) are in
+[`CLAUDE.md`](https://github.com/MemberJunction/MJ/blob/next/CLAUDE.md) and
+[`guides/RELEASE_ENGINEERING_RUNBOOK.md`](https://github.com/MemberJunction/MJ/blob/next/guides/RELEASE_ENGINEERING_RUNBOOK.md).
