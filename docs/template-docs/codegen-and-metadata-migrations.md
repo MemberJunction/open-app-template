@@ -54,7 +54,7 @@ You edited records under `metadata/` (applications, lookup seeds, actions...):
 
 **Cadence**: at minimum, every published version must carry the metadata-sync
 migrations that reproduce its metadata state — commit them as you go, and
-verify before each release PR that no metadata change is missing its migration.
+verify before each release that no metadata change is missing its migration (`rr: metadata shipped` checks this on the Version Packages PR).
 
 ## Rules that keep you out of trouble
 
