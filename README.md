@@ -41,7 +41,7 @@ proving rather than describing.
 | `packages/Server` | Server bootstrap — MJAPI imports it at startup and calls its `startupExport` | With server code |
 | `packages/Angular` | Client bootstrap — MJExplorer bundles it; your components + generated forms. Ships **one placeholder page** wired end-to-end so the Explorer chain is provable | With UI |
 | `mj.config.cjs` | CodeGen/migrate configuration for this repo | **Required** for codegen |
-| `.github/workflows/` | CI: `build`, `changes` (migration + changeset gates), `publish` (npm via OIDC) | Recommended |
+| `.github/workflows/` | CI: `build`, `changes` (door checks), `version` (Version Packages PR), `release-readiness` (`rr:` release gates), `publish` (npm via OIDC + back-merge). In the template itself the release jobs skip. | Recommended |
 | `.changeset/` + `ci/` | Fixed versioning + release pipeline helpers | Recommended |
 | `pnpm-workspace.yaml` + `.npmrc` | pnpm workspace + resolution settings (this repo is **pnpm**, like MJ 6.x) | **Required** |
 | `docs/template-docs/` + `plans/complete/TEMPLATE-SPEC.md` | The deep-dive docs + the full required/optional inventory | Recommended |
@@ -95,7 +95,7 @@ Commands run from **this repo's root**, with the app linked to an MJ checkout
 | **Make the app show up in Explorer** | Fill in `metadata/applications/`, match each nav item's `DriverClass` to an `@RegisterClass(BaseResourceComponent, …)` component, rebuild Explorer | [docs/template-docs/explorer-visibility.md](docs/template-docs/explorer-visibility.md) |
 | **Build** | `pnpm run build:packages` (one package: `pnpm --filter @mj-sample-app/ng run build`) | — |
 | **Ship a change** | Changeset (`pnpm exec changeset`, ≥ minor if it adds a migration) → PR to `next` | [docs/template-docs/branching.md](docs/template-docs/branching.md) |
-| **Release / publish to npm** | Merge the release PR `next` → `main`; the publish workflow does the rest | [docs/template-docs/publishing.md](docs/template-docs/publishing.md) |
+| **Release / publish to npm** | Merge the Version Packages PR (opened automatically, targets `main`); the publish workflow does the rest | [docs/template-docs/publishing.md](docs/template-docs/publishing.md) |
 
 **Managing migrations, the rules that matter:** never edit an applied
 migration (add a new one); timestamps must increase; no `__mj_*` columns or FK

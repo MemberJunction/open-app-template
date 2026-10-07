@@ -7,15 +7,17 @@ already wired in `.github/workflows/publish.yml`.
 
 ## The release pipeline (two halves, deliberately)
 
-Versioning and publishing are separate workflows, and neither writes to a
-protected branch. The version bump arrives as a **pull request**; publishing
-reads the versions that PR landed.
+Versioning and publishing are separate workflows, and neither pushes to a
+protected branch. The version bump arrives as a **pull request into `main`** (that
+PR is the release); publishing reads the versions that PR landed.
 
 ### 1. `version.yml` — on every push to `next`
 
-Runs `changesets/action` with a version script and **no** publish script, so it
-can only ever open or update the **"Version Packages" PR** into `next`. That PR
-contains, as a reviewable diff:
+Runs `changesets/action` (`branch: main`) with a version script and **no**
+publish script, so it can only ever open or update the **"Version Packages" PR**:
+head `changeset-release/main`, base `main`, opened with a GitHub App token
+(`vars.APP_CLIENT_ID` + `secrets.APP_PRIVATE_KEY`) so its checks run. That PR is
+the release. It contains, as a reviewable diff:
 
 - every package bumped (all fixed packages move together)
 - the generated `CHANGELOG.md` entries
@@ -27,39 +29,43 @@ The lockfile refresh is not incidental. `changeset version` rewrites every
 the lockfile. Skip it and `--frozen-lockfile` fails on every branch afterwards,
 which is exactly what happened in bizapps-accounting when a bump was run by hand.
 
-### 2. `release-readiness.yml` — on the version PR, and on any PR to `main`
+### 2. `release-readiness.yml` — on any PR to `main` (the Version Packages PR)
 
-Two aggregate assertions, sharing one implementation (`ci/check-bump-level.sh`):
+The `rr:` gates, each a separate required check: no changesets still pending
+(`rr: changesets`), a release carrying migrations or metadata is at least a minor
+(`rr: minor bump`), metadata changes ship in a `Metadata_Sync` migration
+(`rr: metadata shipped`), every migration since the last release has its
+`migrations-pg/` counterpart (`rr: pg counterparts`), the last release is already
+merged back (`rr: release base current`), no released migration was edited
+(`rr: migration immutability`), and every package exists on npm
+(`rr: packages on npm`).
 
-- **no changesets may still be pending** — that state would publish versions no
-  changelog describes
-- **a release carrying migrations must be at least a minor** — a consumer
-  upgrading on a patch does not expect schema changes
-
-Both are properties of the *release*, not of any one PR, which is why they are
-not enforced per feature PR: changesets aggregate, so one minor already in the
-window covers the release. Label a PR `bump-level-exempt` for the migrations that
-genuinely are not features (a re-captured baseline, a comment fix).
-
-### 3. `publish.yml` — on push to `main` (i.e. merging the release PR)
+### 3. `publish.yml` — on push to `main` (i.e. merging the Version Packages PR)
 
 1. Validations: lockfile case-sensitivity, migration filenames, every package
    exists on npm, `repository.url` matches the root (npm provenance), and every
    publishable package restricts what it ships (`files` + `publishConfig.access`).
 2. **Fails** if changesets are still pending on `main`.
 3. Builds, then `changeset publish` → **npm**.
-4. Tags `vX.Y.Z`, idempotently.
+4. Tags `vX.Y.Z` **only if something shipped**.
+5. Opens and merges a `release-back-merge/vX.Y.Z` PR into `next` with the App
+   token, so `next` carries the released versions. If it cannot merge, the run
+   goes red and names the PR.
 
 `changeset publish` never reads `.changeset/*.md`. It compares each package's
 version against the registry and publishes what is missing — so the versions the
 release PR carried *are* the instruction, and a re-run is a safe no-op.
 
-Nothing in this half writes to `main` or `next`. The old shape did (a version
-commit pushed straight to `main`, then a merge-back to `next`), and under a
-branch ruleset requiring pull requests it failed **after** publishing to npm:
-registry moved, repository did not, no tag. `github-actions[bot]` cannot be
-granted a ruleset bypass — GitHub blocks that by design — so routing the bump
-through a PR is the fix, not a permission.
+Nothing in this pipeline pushes to `main` or `next` directly: every change lands
+through a PR. The old shape pushed a version commit straight to `main` and a
+merge-back to `next`, and under a ruleset requiring pull requests it failed
+**after** publishing to npm: registry moved, repository did not, no tag. The App
+is a "pull requests only" bypass actor on `next`, so its back-merge PR merges
+immediately while everyone else still needs the checks.
+
+In **open-app-template itself** the version, publish and `rr:` jobs skip (they
+check the repository name): the template never releases. Apps created from it run
+them normally.
 
 > **The template does not publish itself.** `publish.yml` is guarded on
 > `github.repository`, so the sample `@mj-sample-app/*` packages can never reach
@@ -198,11 +204,8 @@ migrations, never a rebuild.
 - [ ] Changesets on `next` describe everything since the last release
 - [ ] Migrations + regenerated code committed together (see codegen doc)
 - [ ] `next` is green (build.yml + changes.yml)
-- [ ] "Version Packages" PR reviewed and merged into `next` (check it carries the
-      refreshed lockfile and the `mj-app.json` sync). Under the default
-      `GITHUB_TOKEN` its checks do not start on their own — they sit waiting, and
-      a maintainer clicks **Approve and run** on the PR. One click, not a dead
-      end; a GitHub App token removes the click, since App-created PRs trigger
-      workflows normally.
-- [ ] Release PR `next` → `main` green on `release-readiness`
-- [ ] Workflow run green; tag exists; packages on npm
+- [ ] The "Version Packages" PR (`changeset-release/main` → `main`) shows the
+      expected version, the refreshed lockfile and the `mj-app.json` sync
+- [ ] All `rr:` checks and `build` green on it; merge it
+- [ ] `publish.yml` run green; tag exists; packages on npm
+- [ ] The `release-back-merge/vX.Y.Z` PR merged into `next`
