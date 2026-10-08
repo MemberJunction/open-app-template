@@ -52,7 +52,8 @@ You edited records under `metadata/` (applications, lookup seeds, actions...):
    loop above too.
 4. Commit the metadata JSON (`uuidgen` primaryKey, no `sync` block), with a changeset.
 
-**Cadence**: one metadata seed per release. When it is generated, core
+**Cadence**: one metadata seed per release, and `rr: metadata shipped` on the
+Version Packages PR checks that no metadata change is missing from it. When it is generated, core
 stored-procedure calls use `${mjSchema}` and this app's own calls
 `${flyway:defaultSchema}`, never a literal `__mj`. The model and the Open App
 steps that differ from core: [Release Metadata Migrations Guide](https://github.com/MemberJunction/MJ/blob/next/guides/RELEASE_METADATA_MIGRATIONS_GUIDE.md).
