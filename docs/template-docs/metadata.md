@@ -6,9 +6,9 @@ under `metadata/` and pushed into your dev database with `mj sync`. This doc
 is how to format and write them. The lifecycle rule to internalize first:
 
 > `metadata/` is the **dev-time source of truth**. The install engine never
-> reads it — consumers receive your metadata through the
-> `V*_Metadata_Sync.sql` migrations you capture from it
-> (see [codegen-and-metadata-migrations.md](codegen-and-metadata-migrations.md)).
+> reads it — consumers receive your metadata through the one
+> `V*__Metadata_Sync.sql` migration the build engineer generates from it each
+> release (see [codegen-and-metadata-migrations.md](codegen-and-metadata-migrations.md)).
 
 ## Directory layout
 
@@ -135,7 +135,7 @@ registered `Sample App: Item Types`. To seed it: create
 `metadata/item-types/` with the folder config + record file shown above, add
 `"item-types"` to the root `directoryOrder`, then push (below). Don't seed
 lookup tables with hand-written INSERTs as the source of truth — author here,
-let the capture step produce the SQL that ships.
+let the release's metadata seed produce the SQL that ships.
 
 ## Worked example 2 — an application with nav items
 
@@ -184,19 +184,18 @@ component → registration → bundle → nav item → user-access chain, and wh
 when nothing appears, is in
 [explorer-visibility.md](explorer-visibility.md).
 
-## The workflow (edit → push → capture → commit)
+## The workflow (edit → push → commit)
 
 ```sh
 # from the MJ repo root, with this app linked (docs/template-docs/linking-to-mj.md)
 pnpm exec mj-sync validate --dir=./metadata     # 1. validate
 pnpm exec mj sync push --dir=./metadata --format=json  # 2. push to YOUR dev DB
-# 3. capture the SQL as migrations/V<ts>__v<x.y.x>_Metadata_Sync.sql
-#    (hardcoded UUIDs; ${flyway:defaultSchema} for your schema, literal __mj for core rows)
-# 4. commit metadata files (incl. write-backs) + the migration + a changeset
+# 3. commit the metadata JSON (uuidgen primaryKey, no sync block) + a changeset.
+#    Do NOT capture a Metadata_Sync.sql: the build engineer generates one per release.
 ```
 
-Teammates and installs get the migration, **not** your sync — never treat
-push as a distribution mechanism.
+Teammates and installs get the release's metadata migration, **not** your
+sync — never treat push as a distribution mechanism. The model: [Release Metadata Migrations Guide](https://github.com/MemberJunction/MJ/blob/next/guides/RELEASE_METADATA_MIGRATIONS_GUIDE.md).
 
 ## Gotchas
 

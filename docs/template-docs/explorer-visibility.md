@@ -118,21 +118,20 @@ column default of `1` — visible to every new user. If your product app ships
 `DefaultForNewUser` only applies when a user record is **created**. Existing dev
 users need an explicit `MJ: User Applications` row — in an mjdev instance that's
 `mjdev apps enable <slug> <app>`; otherwise add the row (or a
-`__mj.UserApplication` INSERT in your metadata-sync migration) yourself.
+`UserApplication` row in your metadata) yourself.
 
 ## Getting it into a release
 
 `metadata/` is **dev-time only** — an install never reads it. The Application
-row reaches other databases as SQL: push to your dev DB, then capture the
-emitted SQL into a `V<timestamp>__v<x.y.x>_Metadata_Sync.sql` migration with
-**hardcoded UUIDs** ([metadata.md](metadata.md) § the workflow,
+row reaches other databases as SQL, but you don't write that SQL: commit the
+metadata JSON, and the build engineer's per-release `V<timestamp>__v<x.y.x>__Metadata_Sync.sql`
+carries it ([metadata.md](metadata.md) § the workflow,
 [codegen-and-metadata-migrations.md](codegen-and-metadata-migrations.md)).
 
-> Capture from a **from-zero** database. Captured SQL records deltas against the
-> capture database's current state, so a capture taken after a partial
-> `drop-schema` cycle can silently omit the Application row while keeping the
-> `MJ: Application Entities` rows that reference it — and every clean deploy then
-> fails on `FK_ApplicationEntity_Application`.
+> That seed must be generated from a **from-zero** database. A seed generated
+> after a partial `drop-schema` cycle can silently omit the Application row while
+> keeping the `MJ: Application Entities` rows that reference it — and every clean
+> deploy then fails on `FK_ApplicationEntity_Application`. Model: [Release Metadata Migrations Guide](https://github.com/MemberJunction/MJ/blob/next/guides/RELEASE_METADATA_MIGRATIONS_GUIDE.md).
 
 ## Checklist when nothing shows up
 

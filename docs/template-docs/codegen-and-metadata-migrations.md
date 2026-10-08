@@ -45,16 +45,18 @@ You edited records under `metadata/` (applications, lookup seeds, actions...):
    `mj sync push` is a **single-author, dev-time tool**: it reconciles YOUR
    files into YOUR database. It is not how teammates or consumers receive
    metadata — migrations are.
-2. Capture the resulting SQL as a **metadata-sync migration**:
-   `V<timestamp>__v<x.y.x>_Metadata_Sync.sql` (hardcoded UUIDs, `${flyway:defaultSchema}`
-   for your schema, literal `__mj` for core rows).
+2. **Do not capture a migration.** The build engineer generates one
+   `V<timestamp>__v<x.y.x>__Metadata_Sync.sql` per release, from a fresh
+   database, carrying every metadata change since the last release.
 3. If the metadata implies codegen output (e.g. new entities), run the schema
    loop above too.
-4. Commit metadata files + the sync migration together, with a changeset.
+4. Commit the metadata JSON (`uuidgen` primaryKey, no `sync` block), with a changeset.
 
-**Cadence**: at minimum, every published version must carry the metadata-sync
-migrations that reproduce its metadata state — commit them as you go, and
-verify before each release that no metadata change is missing its migration (`rr: metadata shipped` checks this on the Version Packages PR).
+**Cadence**: one metadata seed per release, and `rr: metadata shipped` on the
+Version Packages PR checks that no metadata change is missing from it. When it is generated, core
+stored-procedure calls use `${mjSchema}` and this app's own calls
+`${flyway:defaultSchema}`, never a literal `__mj`. The model and the Open App
+steps that differ from core: [Release Metadata Migrations Guide](https://github.com/MemberJunction/MJ/blob/next/guides/RELEASE_METADATA_MIGRATIONS_GUIDE.md).
 
 ## Rules that keep you out of trouble
 

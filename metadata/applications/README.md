@@ -20,9 +20,9 @@ see, so no placeholder row ever reaches a database.
      `packages/Angular`. Exactly one entry carries `isDefault: true`.
    - `primaryKey.ID` — generate a UUID (`uuidgen`) and never change it once
      pushed anywhere.
-3. Push it (`pnpm exec mj sync push --dir=./metadata --format=json`), then
-   **capture the SQL into a `V*__…_Metadata_Sync.sql` migration** — installs
-   replay migrations, never this folder.
+3. Push it to your dev database (`pnpm exec mj sync push --dir=./metadata --format=json`)
+   and commit the JSON. Installs replay migrations, never this folder: the build
+   engineer ships these records in the release's `V*__…_Metadata_Sync.sql` migration.
 
 ## Two things that surprise everyone
 

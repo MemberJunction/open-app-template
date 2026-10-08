@@ -120,6 +120,17 @@ pnpm run mj:codegen           # regenerate entities/resolvers/forms after a sche
 pnpm --filter @mj-sample-app/ng run build
 ```
 
-The full development workflow (where to add code, capturing codegen +
-metadata-sync migrations, releasing) is in the README's "Development
-workflow" table.
+The full development workflow (where to add code, capturing codegen
+migrations, releasing) is in the README's "Development workflow" table.
+Metadata is the exception: a PR adds JSON only, and the `Metadata_Sync`
+migration is generated once per release (below).
+
+## Metadata ships as release migrations
+
+`mj app install` and upgrades run migrations only. There is no metadata phase, by design. A record that exists only as JSON under `metadata/` reaches no host until a release ships it inside a migration.
+
+- **PRs carry metadata JSON only.** Never hand-write or generate a `*__Metadata_Sync.sql` in a feature PR.
+- **The build engineer** generates one differential `Metadata_Sync` migration per release, from a fresh database.
+- **Rows missing after a fresh install** usually mean a release shipped without its metadata migration. Hand that to the build engineer rather than changing the installer.
+
+The model, and the Open App steps that differ from core (`--schema`, the `${mjSchema}` substitution): [Release Metadata Migrations Guide](https://github.com/MemberJunction/MJ/blob/next/guides/RELEASE_METADATA_MIGRATIONS_GUIDE.md).
