@@ -27,12 +27,28 @@ Full flow: [branching.md](branching.md) and [publishing.md](publishing.md).
 ## 3. Branch protection
 
 Nothing in the pipeline pushes to a branch directly, so both branches can be
-protected. Follow the "Open App Release CI Rollout" SOP. On `next`: changes arrive
-by pull request with the door checks required and **no approval required**, and
-the CI GitHub App is a "pull requests only" bypass actor so the back-merge can
-merge itself. On `main`: the `rr:` checks and `build` required, **one approval**,
-and dismiss-stale-reviews, with the Repository admin role as a "pull requests only"
-bypass: the override for a failure case (no second reviewer, a stuck check).
+protected. Follow the "Open App Release CI Rollout" SOP.
+
+On `next`: changes arrive by pull request with the door checks required and **one
+approving review**, and the CI GitHub App is a "pull requests only" bypass actor so
+the release back-merge can merge itself rather than waiting for a reviewer.
+
+On `main`: **two rulesets, not one.** A ruleset bypass applies to every rule in its
+ruleset, and the release needs to skip the review without skipping the gate — so the
+review and the checks cannot live together.
+
+- The review ruleset (`protect-main`) carries **one approval** and dismiss-stale-reviews.
+  Its bypass actors are the Repository admin role, any break-glass team the repo has,
+  and **the CI GitHub App**, all "pull requests only". The App's bypass is what lets
+  `release.yml` merge the Version Packages PR unattended.
+- The checks ruleset (`protect-main-checks`) carries the `rr:` checks, `build`, and the
+  deletion and non-fast-forward rules. Its bypass actors are the Repository admin role
+  and any break-glass team — the human override for a stuck check — but **not** the App.
+  Excluding it is what stops a dispatch from releasing a failing build: a human override
+  is a person deciding to, whereas an App override would be anyone with write deciding to.
+
+Releases are cut by dispatching **Cut the Release** (`release.yml`), not by clicking merge
+on the Version Packages PR.
 
 ## 4. Services to connect
 
