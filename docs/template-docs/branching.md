@@ -28,8 +28,11 @@ feature branch ──PR──▶ next ──(Version Packages PR)──▶ main 
    tracks `next` will push straight to `next` and bypass review. Verify with
    `git branch -vv`; fix with
    `git branch --set-upstream-to=origin/<name> <name>`.
-4. Open the PR against `next`. CI runs `build.yml` (compile) and `changes.yml`
-   (migration filename/timestamp validation + changeset enforcement).
+4. Open the PR against `next`. CI runs `build.yml` (compile), `changes.yml`
+   (migration filename/timestamp validation + changeset enforcement) and
+   `repo-checks.yml` (MJ and other apps' packages are caret peers; the `shared` and
+   `client` packages in `mj-app.json` stay free of server-only dependencies). A PR that
+   touches a `package.json` also gets `caret-pins.yml`, which is advisory.
 5. If the PR adds a migration, it MUST include a changeset with at least a
    **minor** bump (`pnpm exec changeset`) — CI fails otherwise.
 

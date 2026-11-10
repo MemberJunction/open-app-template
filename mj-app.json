@@ -32,6 +32,10 @@
         "name": "@mj-sample-app/server",
         "role": "bootstrap",
         "startupExport": "LoadSampleAppServer"
+      },
+      {
+        "name": "@mj-sample-app/actions",
+        "role": "actions"
       }
     ],
     "client": [
@@ -44,10 +48,6 @@
     "shared": [
       {
         "name": "@mj-sample-app/entities",
-        "role": "library"
-      },
-      {
-        "name": "@mj-sample-app/actions",
         "role": "library"
       }
     ]

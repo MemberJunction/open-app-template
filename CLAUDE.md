@@ -104,7 +104,12 @@ written for people, a `primaryKey` on every metadata record) are in MJ's
    workspace (installs happen at the workspace parent). A second physical copy of
    `@memberjunction/global`/`core` splits MJ's class-factory registry and your
    entities/resolvers silently stop appearing
-   (`docs/template-docs/versioning-and-peer-deps.md`).
+   (`docs/template-docs/versioning-and-peer-deps.md`). `repo-checks.yml` enforces
+   this on every PR, together with the manifest tier rule: a package listed under
+   `packages.shared` or `packages.client` in `mj-app.json` loads in the browser, so
+   it never depends on or peers a server-only package (`@memberjunction/actions`,
+   `@memberjunction/server`, the data providers). That is why `Actions` is listed
+   under `packages.server`.
 6. **When linked to MJ**: the *registration* edits in the MJ repo
    (`mj.config.cjs` `dynamicPackages`, MJAPI/MJExplorer `package.json`, the
    Explorer bootstrap import) are local-only — never commit them to MJ. The

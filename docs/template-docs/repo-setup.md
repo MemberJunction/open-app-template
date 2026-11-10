@@ -17,7 +17,9 @@ git push -u origin next
 ## 2. Why two branches?
 
 - **`next`** — integration. Feature work merges here; CI (`build.yml`,
-  `changes.yml`) gates every PR. Changesets accumulate here between releases.
+  `changes.yml`, `repo-checks.yml`) runs on every PR, and `caret-pins.yml` adds an
+  advisory check when a `package.json` changes. Changesets accumulate here between
+  releases.
 - **`main`** — release. Only the Version Packages PR (opened automatically from
   `next`) merges here. A push to `main` triggers `publish.yml`, which builds,
   publishes to npm, tags, and opens + merges a back-merge PR into `next`.
