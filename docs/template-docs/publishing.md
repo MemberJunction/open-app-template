@@ -90,7 +90,8 @@ changeset would produce `0.2.0`, and getting `0.1.0` out would mean publishing w
 changeset and then reconciling the two by hand.
 
 It also lines up with the bootstrap below: `0.0.0` is the placeholder version you push to
-npm to enable trusted publishing, so the manifest and the registry agree from the start.
+npm so the package exists before you configure trusted publishing, and the manifest and the
+registry agree from the start.
 
 So: **don't set a version manually.** Write changesets; the release flow owns the number.
 (Sibling packages are pinned at each other's exact version and move together — see
@@ -150,11 +151,36 @@ Two things that make this smoother:
   an integration-test package that lives in `packages/` but has no business on the
   registry.
 
-### 3. Add the Trusted Publisher on each package
+### 3. Add the Trusted Publisher on each package — immediately before your first release
+
+Unlike steps 1 and 2, **this one is not bootstrap: do it on release day.** A configuration
+npm has not validated expires in 48 hours (see below), so configuring all your packages the
+same afternoon you publish the placeholders guarantees a set of dead entries unless the
+release goes out within two days.
 
 On npmjs.com, for **each** package: **Settings → Trusted Publisher → GitHub Actions**,
 then select your org, enter the repository, and name the workflow file **`publish.yml`**.
-Check the option allowing npm publish, and save.
+Check the option allowing npm publish, and save. Leave the **environment field empty** —
+`publish.yml`'s `build-and-publish` job declares no `environment:`, and a configuration that
+names one will not match the run.
+
+#### The 48-hour validation window
+
+Since [2026-10-02](https://github.blog/changelog/2026-10-02-unvalidated-npm-trusted-publishing-configurations-now-expire/),
+npm expires a trusted publisher configuration that has not been validated within **48 hours**
+of being created, and **only a successful OIDC publish from `publish.yml` validates it**. The
+manual `npm publish` in step 2 does not count — it authenticates with your own credentials,
+not the workflow's. Each entry shows its own deadline while it waits
+(*"Publish once before … to validate this configuration"*).
+
+An expired entry reads `Status: Expired`, cannot be edited, and fails the publish with
+`ENEEDAUTH`. The fix is to **delete it and create a new one**, which starts a fresh 48-hour
+window; expired entries can linger in the list but no longer count against the per-package
+limit. Recreating costs nothing, so when in doubt configure late rather than early.
+
+Left unnoticed, this fails in the worst place: `validate-npm-packages.sh` passes (the
+packages do exist), the build succeeds, and the run dies at `changeset publish` — possibly
+after some of your packages have already shipped and the rest have not.
 
 ### 4. Never touch a token again
 
@@ -163,11 +189,18 @@ to create, store or rotate (`publish.yml` already declares `permissions: id-toke
 Releases also carry npm **provenance**, which is why CI validates that every package's
 `repository.url` matches the root.
 
+This works in a pnpm monorepo without any extra wiring, which is worth knowing before anyone
+goes looking for a bug: `changeset publish` shells out to `pnpm publish` for a pnpm
+workspace, and `pnpm publish` packs a tarball and hands it to the **npm CLI**, which performs
+the OIDC exchange and signs the provenance. pnpm carries no OIDC implementation of its own
+and does not need one — so there is nothing to change about the pinned pnpm version.
+
 ### Checklist
 
 - [ ] npm scope owned
 - [ ] `0.0.0` published for all five packages (`npm view <name> version` returns `0.0.0`)
-- [ ] Trusted Publisher configured per package, pointing at `publish.yml`
+- [ ] Trusted Publisher configured per package, pointing at `publish.yml`, environment left
+      empty — **done on release day**, because an unvalidated configuration expires in 48 hours
 - [ ] `.github/scripts/validate-npm-packages.sh` passes locally
 - [ ] first changeset written — the release flow takes it from `0.0.0` to `0.1.0`
 
