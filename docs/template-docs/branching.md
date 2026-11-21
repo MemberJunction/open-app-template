@@ -30,6 +30,13 @@ feature branch ──PR──▶ next ──(Version Packages PR)──▶ main 
    `git branch --set-upstream-to=origin/<name> <name>`.
 4. Open the PR against `next`. CI runs `build.yml` (compile) and `changes.yml`
    (migration filename/timestamp validation + changeset enforcement).
+   `build.yml` installs through `.github/actions/ci-install`: a PR into `next`
+   (and `next` itself) is built against **MemberJunction `next`** and each
+   sibling app in `mj-app.json` at its `next`, from source, in the workspace
+   `mj dev workspace` generates — the same layout you develop in. So a PR that
+   needs an MJ change merged on MJ `next` goes green without waiting for an MJ
+   edge release. PRs into `main` and `lts/*` install the committed lockfile, so
+   a release is still built against the published MJ versions it claims.
 5. If the PR adds a migration, it MUST include a changeset with at least a
    **minor** bump (`pnpm exec changeset`) — CI fails otherwise.
 
