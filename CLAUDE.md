@@ -122,6 +122,38 @@ Full concrete TypeScript examples live in [`docs/claude/04-performance.md`](docs
 4. **`ConversationEngine`-Style Bounded Container Caching:** Never cache unbounded transactional tables globally or cache arbitrary `ExtraFilter` SQL list views. Cache only bounded container windows/subtrees (e.g., per-`SpaceID`, per-`ConversationID`, per-`RootParentID`) with `BaseEntity` event invalidation + explicit `Invalidate*()` + persona-switch eviction.
 5. **RLS-Safe Two-Step Entity Reads:** Never write raw SQL subqueries against RLS-filtered base views (`vw*`) inside `ExtraFilter`; read the RLS-protected entity via `RunView` first, then pass `ID IN (...)`.
 
+## MJ Docs (MJ: Artifacts) vs. MJ: Comments vs. Quick Notes Rubric
+
+Canonical guide (upstream `MemberJunction/MJ` repository, path `MJ/guides/MJ_DOCS_COMMENTS_AND_NOTES_GUIDE.md`): [MJ Docs, Comments & Notes Guide](https://github.com/MemberJunction/MJ/blob/next/guides/MJ_DOCS_COMMENTS_AND_NOTES_GUIDE.md).
+
+### 4-Way Estate-Wide Rubric
+
+1. **Category A — Direct MJ Docs (`MJ: Artifacts`):** Long-form deliverables, versioned briefs/minutes/reports, AI-coauthored documents, Slide Decks, and Live-Block readouts (`>200` words, needing `v1 -> v2` diffs, Yjs CRDT collaborative editing, guest share links, or cross-format synthesis).
+2. **Category B — Hybrid (Fast Note + Linked/Promotable MJ Doc):** Frictionless `<2s` inline capture (e.g., call notes, meeting scratchpads, activity timelines) backed by a nullable `ArtifactID` FK or `RecordArtifact` link and 1-click promotion to a versioned MJ Doc.
+3. **MJ: Comments (`IS-A MJ: Conversations`):** Threaded discussions anchored to `Record`, `Field`, `Section`, `Group`, `DocBlock`, `SlideRegion`, or `SheetRange` with `@mentions` and `IsResolved`. **Never store short discussion comments as `MJ: Artifacts`.**
+4. **Category C — Lightweight Relational Columns:** Micro-text (`<100` words), audit/rejection/override reasons, GL line memos, high-volume transactional notes, structured form answers, and immutable SHA-256 compliance evidence ledgers.
+
+### Schema & Permission Delegation Rules
+
+- **1:1 vs. 0..N attachment:** Use a direct nullable `ArtifactID` FK (plus optional `ApprovedArtifactVersionID`) for `1:1` primary documents; use polymorphic `MJ: Record Artifacts` (`__mj.RecordArtifact`) for `0..N` attached docs.
+- **Host-entity permission delegation:** Set `Artifact.DelegateEntityID` + `DelegateRecordID` for host-entity permission delegation via `IArtifactPermissionDelegate`.
+- **Polymorphic FK metadata:** Always set `EntityField.EntityIDFieldName` for polymorphic FK pairs.
+
+### Additive-Only Migration Playbook (`PUBLISH_NO_BREAK_POLICY.md`)
+
+Follow the upstream `MemberJunction/MJ` [`PUBLISH_NO_BREAK_POLICY.md`](https://github.com/MemberJunction/MJ/blob/next/PUBLISH_NO_BREAK_POLICY.md) 4-step **Expand -> Bridge -> Deprecate -> EraBump** playbook (additive-only: never drop, rename, or narrow columns within a platform era):
+
+1. **Expand:** Add nullable `ArtifactID` (and optional `ApprovedArtifactVersionID`) FK or `__mj.RecordArtifact` linkage alongside existing relational note columns.
+2. **Bridge:** Support dual-read, incremental backfill, or 1-click promotion while preserving full backward compatibility for existing consumers.
+3. **Deprecate:** Mark legacy note columns deprecated in metadata and docs once callers migrate; keep existing columns intact and readable.
+4. **EraBump:** Remove deprecated columns only on a coordinated platform era boundary.
+
+### Explicit Anti-Goals
+
+- **Never** store short threaded discussion comments or `<100`-word micro-text/audit reasons as `MJ: Artifacts`.
+- **Never** drop, rename, or narrow existing note columns within a platform era.
+- **Never** bypass `IArtifactPermissionDelegate` (omitting `Artifact.DelegateEntityID` + `DelegateRecordID` where host-entity permissions govern access) or omit `EntityField.EntityIDFieldName` on polymorphic FK pairs.
+
 ## Build & dev commands
 
 ```sh
