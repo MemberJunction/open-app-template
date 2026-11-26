@@ -13,8 +13,10 @@
  *   exactly one copy of each may exist in a host process; a second copy
  *   splits MJ's class factory and silently breaks registration.
  *
- * TODO(template): nothing to hand-write here initially. After your first
- * migration + codegen run, the generated subclasses appear below. Add any
- * hand-written helpers in src/ (NOT src/generated/ — CodeGen owns that).
+ * TODO(template): after your first migration + codegen run, the generated
+ * subclasses appear below. Wire your bounded reference tables into
+ * `SampleAppEngineBase` in `src/app-engine-base.ts` (NOT `src/generated/` —
+ * CodeGen owns that).
  */
 export * from './generated/entity_subclasses';
+export { SampleAppEngineBase, LoadSampleAppEngineBase } from './app-engine-base';
