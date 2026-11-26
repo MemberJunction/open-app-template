@@ -49,13 +49,14 @@ pnpm-workspace.yaml    - pnpm workspace + resolution settings (see .npmrc)
 migrations/            - Skyway migrations for the app schema (starts empty)
 metadata/              - mj-sync metadata (dev-time; seeds ship as migrations)
 packages/
-  Entities/            - @mj-sample-app/entities   (CodeGen entity subclasses)
+  Entities/            - @mj-sample-app/entities   (CodeGen entity subclasses + SampleAppEngineBase)
   CoreEntitiesServer/  - @mj-sample-app/core-entities-server (server-side entity overrides)
   Actions/             - @mj-sample-app/actions    (MJ Actions)
   Server/              - @mj-sample-app/server     (server bootstrap -> MJAPI)
   Angular/             - @mj-sample-app/ng         (client bootstrap -> MJExplorer)
 docs/                  - how this repo works (branching, publishing, codegen, linking)
 docs/claude/           - the MemberJunction development guide (topic-split, with TOC)
+AGENTS.md              - universal agent guide mirroring critical rules & performance standards
 ```
 
 ## 📖 The MJ rulebook, distilled → [`docs/claude/`](docs/claude/README.md)
@@ -110,6 +111,16 @@ written for people, a `primaryKey` on every metadata record) are in MJ's
    Explorer bootstrap import) are local-only — never commit them to MJ. The
    *linking* files are generated at the workspace parent, outside both repos, and
    are never committed anywhere.
+
+## Performance & Caching Standard (5 Non-Negotiable Rules)
+
+Full concrete TypeScript examples live in [`docs/claude/04-performance.md`](docs/claude/04-performance.md) and the starter engine in [`packages/Entities/src/app-engine-base.ts`](packages/Entities/src/app-engine-base.ts):
+
+1. **`BaseEngine` (`BaseSingleton`) for Bounded Reference/Taxonomy Metadata:** Cache small lookup/config tables (types, statuses, roles, categories) via `BaseEnginePropertyConfig` with `AutoRefresh: true` and O(1) lookup maps reset in `AdditionalLoading()` — never re-query them via `RunView` per widget mount.
+2. **Multi-Provider & Impersonation Safety:** Override `ProviderToUse` to follow the active provider passed to `Config()` / `Metadata.Provider`; auto-evict user caches whenever `userId` changes; set `CacheLocal: false` on any RLS-filtered entity; gate optional/staff-only queries on `EntityInfo.GetUserPermisions(user)?.CanRead`.
+3. **Mandatory `rv.RunViews([...])` Single-Request Batching:** Never fire `Promise.all([new RunView().RunView(...), ...])` (N separate HTTP requests) or multi-hop `ParentID` loops when `RootParentID` exists. Use `RunView.FromMetadataProvider(this.ProviderToUse).RunViews([...])` with `ResultType: 'simple'` + narrow `Fields`.
+4. **`ConversationEngine`-Style Bounded Container Caching:** Never cache unbounded transactional tables globally or cache arbitrary `ExtraFilter` SQL list views. Cache only bounded container windows/subtrees (e.g., per-`SpaceID`, per-`ConversationID`, per-`RootParentID`) with `BaseEntity` event invalidation + explicit `Invalidate*()` + persona-switch eviction.
+5. **RLS-Safe Two-Step Entity Reads:** Never write raw SQL subqueries against RLS-filtered base views (`vw*`) inside `ExtraFilter`; read the RLS-protected entity via `RunView` first, then pass `ID IN (...)`.
 
 ## Build & dev commands
 

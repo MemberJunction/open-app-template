@@ -15,15 +15,16 @@ const person = await md.GetEntityObject<PersonEntity>('Person', contextUser);
   `RunView`) — the server serves many users; omitting it breaks isolation and
   auditing. Client-side Angular code may omit it (context is ambient).
 
-## Loading collections — RunView
+## Loading collections — `RunView` & `RunViews`
 
 ```typescript
-const rv = new RunView();
-const result = await rv.RunView<PersonEntity>({
+const rv = RunView.FromMetadataProvider(this.ProviderToUse);
+const result = await rv.RunView<PersonRow>({
     EntityName: 'Person',
     ExtraFilter: `LastName='Smith'`,
+    Fields: ['ID', 'FirstName', 'LastName'],
     OrderBy: 'FirstName ASC',
-    ResultType: 'entity_object'
+    ResultType: 'simple',
 }, contextUser);
 if (result.Success) { const people = result.Results ?? []; }
 else { LogError(result.ErrorMessage); }
@@ -31,10 +32,26 @@ else { LogError(result.ErrorMessage); }
 
 - **RunView does NOT throw** — check `result.Success` / `result.ErrorMessage`.
   A try/catch around it catches nothing.
-- Batch independent queries with **`RunViews` (plural)** — one round trip, not
-  N. Never call RunView inside a loop; load once, aggregate client-side.
+- **Batch independent queries with `rv.RunViews([...])` (plural)** — NEVER fire
+  `Promise.all([new RunView().RunView(...), ...])` (that sends N separate HTTP
+  requests). Never call `RunView` inside a loop; load once, aggregate client-side.
+- **Read bounded lookup/taxonomy tables from your `BaseEngine`**
+  (`SampleAppEngineBase.Instance`) instead of issuing `RunView` on every mount.
 - Prefer the view's denormalized fields (`run.Model`) over a second lookup by
-  ID (`run.ModelID` → query).
+  ID (`run.ModelID` → query), and query `RootParentID` in one read instead of
+  multi-hop `ParentID` loops.
+
+## RLS-safe two-step entity reads & permission gating
+
+- **Never write raw SQL subqueries against RLS-filtered views (`vw*`) in `ExtraFilter`**
+  (they bypass MJ's RLS pipeline and break SQL Server / PostgreSQL parity).
+  Instead, query the RLS-protected entity via `RunView` first, collect the
+  returned IDs, and pass `ID IN (...)` to the second query.
+- **Gate optional queries on `EntityInfo.GetUserPermisions(user)?.CanRead`**
+  before querying staff-only or optional entities so lower-privilege users
+  degrade cleanly without authorization errors.
+- See [`04-performance.md`](04-performance.md) for full TypeScript examples of
+  all 5 performance & caching rules.
 
 ## Save / Delete — booleans, not exceptions
 

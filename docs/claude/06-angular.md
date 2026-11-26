@@ -33,6 +33,38 @@
   when its initial load finishes — or the app loading screen hangs forever on
   direct-URL navigation. (`BaseDashboard` handles it for you.)
 
+## Data loading, engines & impersonation safety in Angular
+
+Follow the 5-Rule Performance Standard ([`04-performance.md`](04-performance.md)):
+
+- **Hydrate reference/taxonomy metadata from `BaseEngine`**, not `RunView` per widget mount:
+  ```typescript
+  await SampleAppEngineBase.Instance.Config(false, undefined, this.ProviderToUse);
+  ```
+- **Batch independent panel/dashboard queries into ONE `rv.RunViews([...])` call**
+  with `ResultType: 'simple'` and narrow `Fields` — never `Promise.all([rv.RunView(...), ...])`:
+  ```typescript
+  const rv = RunView.FromMetadataProvider(this.ProviderToUse);
+  const [summaryRes, activityRes] = await rv.RunViews([
+      {
+          EntityName: 'Sample App: Items',
+          ExtraFilter: `Status = 'Active'`,
+          Fields: ['ID', 'Name', 'StatusID'],
+          ResultType: 'simple',
+      },
+      {
+          EntityName: 'Sample App: Activity',
+          OrderBy: '__mj_CreatedAt DESC',
+          Fields: ['ID', 'Summary', '__mj_CreatedAt'],
+          MaxRows: 25,
+          ResultType: 'simple',
+      },
+  ]);
+  ```
+- **Always thread `this.ProviderToUse` (or `@Input() Provider`)** into `RunView.FromMetadataProvider(...)`
+  and `Engine.Instance.Config(...)` so multi-provider hosts and user-impersonation sessions stay isolated.
+  Never enable `CacheLocal: true` on RLS-filtered entities.
+
 ## Custom entity forms
 
 To override a generated form, **extend the generated form class** (not
