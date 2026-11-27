@@ -283,12 +283,14 @@ function parseBalancedParenList(text, openIndex) {
     if (text[openIndex] !== '(') return null;
     const items = [];
     const starts = [];
+    const rawStarts = [];
     const ends = [];
     const pushItem = (from, to) => {
         const raw = text.slice(from, to);
         const lead = raw.search(/\S/);
         items.push(raw.trim());
         starts.push(lead === -1 ? to : from + lead);
+        rawStarts.push(from);
         ends.push(to);
     };
     let depth = 0;
@@ -312,7 +314,7 @@ function parseBalancedParenList(text, openIndex) {
             depth -= 1;
             if (depth === 0) {
                 pushItem(start, i);
-                return { items, starts, ends, end: i + 1 };
+                return { items, starts, rawStarts, ends, end: i + 1 };
             }
             i += 1;
             continue;
@@ -512,9 +514,9 @@ function parseCodeGenSection(codegenRaw, codegenMasked, baseLineOffset) {
                 const tuple = parseBalancedParenList(codegenMasked, openTuple);
                 if (!tuple) break;
                 let columnName = null;
-                if (nameIdx !== -1 && nameIdx < tuple.starts.length) {
-                    const rawVal = codegenRaw.slice(tuple.starts[nameIdx], tuple.ends[nameIdx]).trim();
-                    const strMatch = /^N?'((?:[^']|'')*)'/i.exec(rawVal);
+                if (nameIdx !== -1 && nameIdx < tuple.rawStarts.length) {
+                    const rawVal = codegenRaw.slice(tuple.rawStarts[nameIdx], tuple.ends[nameIdx]).trim();
+                    const strMatch = /(?:^|\s)N?'((?:[^']|'')*)'/i.exec(rawVal);
                     if (strMatch) columnName = strMatch[1].replace(/''/g, "'");
                 }
                 let hasLiteralSequence = false;
