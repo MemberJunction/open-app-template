@@ -165,6 +165,10 @@ pnpm run mj:codegen           # regenerate entities/resolvers/forms after a sche
 
 # one package only (from the workspace root):
 pnpm --filter @mj-sample-app/ng run build
+
+# deterministic migration <-> CodeGen alignment check:
+node ./.github/scripts/check-migration-codegen-alignment.mjs --self-test
+node ./.github/scripts/check-migration-codegen-alignment.mjs --base origin/next
 ```
 
 The full development workflow (where to add code, capturing codegen

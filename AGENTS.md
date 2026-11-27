@@ -75,7 +75,8 @@ Follow the upstream `MemberJunction/MJ` [`PUBLISH_NO_BREAK_POLICY.md`](https://g
 ## Build & Verification Commands
 
 ```sh
-pnpm run build:packages                         # Build all app packages
-pnpm run test                                   # Run package unit tests
-node --test .github/scripts/__tests__/*.spec.mjs # Run CI guard specs
+pnpm run build:packages                                            # Build all app packages
+pnpm run test                                                      # Run package unit tests
+node --test .github/scripts/__tests__/*.spec.mjs                   # Run CI guard specs
+node ./.github/scripts/check-migration-codegen-alignment.mjs --base origin/next # Check migration <-> CodeGen alignment
 ```
